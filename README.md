@@ -18,3 +18,5 @@ My personal hub to practice git commands, javascript and other computer programm
 | `git push -u origin <name-of-your-branch>`| pushes a local branch(es) to a remote repository (origin).                                                         |
 | `git status` | used to see the status of files that were updated, created or deleted but have not been saved in a commit |
 | `git branch -d <branch-name>`| used to delete a branch                                                                                  |
+| `git diff` | to see the changes made since your last commit |
+| `git reset` | used to unstage add  |
