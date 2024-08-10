@@ -1,3 +1,5 @@
 # My personal learning hub
 
-Making my first edit
+My personal hub to practice git commands, javascript and other computer programming languages.
+
+# Getting started
