@@ -32,3 +32,11 @@ Strings written with single or double quotes behave very much the same—the onl
 
 When you write something inside ${} in a template literal, its result will be computed, converted to a string, and included at that position. This example produces the string "half of 100 is 50".
 
+### Unary operators
+
+* `typeof` operator produces a string value naming the type of the value you give it.
+
+console.log(typeof 4.5)
+// → number
+console.log(typeof "x")
+// → string
