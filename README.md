@@ -4,6 +4,9 @@ My personal hub to practice git commands, javascript and other computer programm
 
 # Getting started
 
+### Markdown guide
+* link to guide
+
 ### Git commands
 
 | Action/Resource                            | Description                                                                                               |
