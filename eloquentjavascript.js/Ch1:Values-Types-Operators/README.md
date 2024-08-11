@@ -67,3 +67,21 @@ The operator uses the value to the left of the question mark to decide which of 
 ### Empty values
 
 There are two special values, written `null` and `undefined`that are used to denote the absence of a meaningful value. They are themselves values, but they carry no information.
+
+### Short-Circuiting of logical operators
+
+The `||` operator, for example, will return the value to its `left` when that value can be converted to `true` and will return the value on its `right` otherwise.
+
+* `console.log(null || "user")` // → user
+* `console.log("Agnes" || "user")` // → Agnes
+
+The rules for converting `strings` and `numbers` to `Boolean values` state that `0`, `NaN`, and the empty string `("")` count as `false`, while all the other values count as `true`. That means `0 || -1` produces `-1`, and `"" || "!?"` yields `"!?"`.
+
+The `??` operator resembles `||` but returns the value on the right `only` if the one on the left is `null` or `undefined`, not if it is some other value that can be converted to false. Often, this is preferable to the behavior of `||`.
+
+* `console.log(0 || 100);` // → 100
+* `console.log(0 ?? 100);` // → 0
+* `console.log(null ?? 100);` // → 100
+
+When the value to its `left` is something that converts to `false`, it returns that value, and otherwise it returns the value on its right.
+
