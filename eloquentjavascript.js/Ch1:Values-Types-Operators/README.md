@@ -20,13 +20,13 @@ And this is the second
 
 There are, of course, situations where you want a backslash in a string to be just a backslash, not a special code. If two backslashes follow each other, they will collapse together, and only one will be left in the resulting string value. This is how the string “A newline character is written like "\n".” can be expressed:
 
-```
+```javascript
 "A newline character is written like \"\\n\"."
 ```
 
 Strings written with single or double quotes behave very much the same—the only difference lies in which type of quote you need to escape inside of them. Backtick-quoted strings, usually called template literals, can do a few more tricks. Apart from being able to span lines, they can also embed other values.
 
-```
+```javascript
 `half of 100 is ${100 / 2}`
 ```
 
@@ -36,8 +36,10 @@ When you write something inside ${} in a template literal, its result will be co
 
 `typeof` operator produces a string value naming the type of the value you give it.
 
-* `console.log(typeof 4.5)` // → number
-* `console.log(typeof "x")` // → string
+```javascript
+console.log(typeof 4.5) // → number
+console.log(typeof "x") // → string
+```
 
 ### Boolean values 
 JavaScript has a Boolean type, which has just two values, true and false, written as those words.
@@ -47,20 +49,26 @@ JavaScript supports three logical operators: `and`, `or`, and `not`. These can b
 
 The `&&` operator represents logical `and`. It is a binary operator, and its result is `true` only if both the values given to it are true.
 
-* `console.log(true && false)` // → false
-* `console.log(true && true)` // → true
+```javascript
+console.log(true && false) // → false
+console.log(true && true) // → true
+```
 
 The || operator denotes logical or. It produces true if either of the values given to it is true.
 
-* `console.log(false || true)` // → true
-* `console.log(false || false)` // → false
+```javascript
+console.log(false || true) // → true
+console.log(false || false) // → false
+```
 
 `Not` is written as an exclamation mark `(!)`. It is a unary operator that flips the value given to it—`!true` produces `false` and `!false` gives `true`.
 
 The last logical operator we will look at is not unary, not binary, but `ternary`, operating on `three` values. It is written with a `question mark` and a `colon`, like this:
 
-* `console.log(true ? 1 : 2);` // → 1
-* `console.log(false ? 1 : 2);` // → 2
+```javascript
+console.log(true ? 1 : 2); // → 1
+console.log(false ? 1 : 2); // → 2
+```
 
 The operator uses the value to the left of the question mark to decide which of the two other values to “pick”. If you write `a ? b : c`, the result will be `b` when `a` is `true` and `c` otherwise.
 
@@ -72,16 +80,19 @@ There are two special values, written `null` and `undefined`that are used to den
 
 The `||` operator, for example, will return the value to its `left` when that value can be converted to `true` and will return the value on its `right` otherwise.
 
-* `console.log(null || "user")` // → user
-* `console.log("Agnes" || "user")` // → Agnes
-
+```javascript
+console.log(null || "user") // → user
+console.log("Agnes" || "user") // → Agnes
+```
 The rules for converting `strings` and `numbers` to `Boolean values` state that `0`, `NaN`, and the empty string `("")` count as `false`, while all the other values count as `true`. That means `0 || -1` produces `-1`, and `"" || "!?"` yields `"!?"`.
 
 The `??` operator resembles `||` but returns the value on the right `only` if the one on the left is `null` or `undefined`, not if it is some other value that can be converted to false. Often, this is preferable to the behavior of `||`.
 
-* `console.log(0 || 100);` // → 100
-* `console.log(0 ?? 100);` // → 0
-* `console.log(null ?? 100);` // → 100
+``` javascript
+console.log(0 || 100); // → 100
+console.log(0 ?? 100); // → 0
+console.log(null ?? 100); // → 100
+```
 
 When the value to its `left` is something that converts to `false`, it returns that value, and otherwise it returns the value on its right.
 
