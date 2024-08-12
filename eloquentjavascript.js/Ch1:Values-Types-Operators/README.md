@@ -54,7 +54,7 @@ console.log(true && false) // → false
 console.log(true && true) // → true
 ```
 
-The || operator denotes logical or. It produces true if either of the values given to it is true.
+The `||` operator denotes logical or. It produces `true` if either of the values given to it is `true`.
 
 ```javascript
 console.log(false || true) // → true
