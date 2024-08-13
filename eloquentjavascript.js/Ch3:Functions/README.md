@@ -165,7 +165,7 @@ Functions can be roughly divided into those that are called for their `side effe
 
 ### Summary
 
-Ways to write a function:
+Ways to write a function: 
 ```javascript
 // Define f to hold a function value
 const f = function(a) {
