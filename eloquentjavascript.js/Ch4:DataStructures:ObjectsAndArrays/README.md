@@ -1,0 +1,3 @@
+# Chapter Notes
+
+### The weresquirrel
