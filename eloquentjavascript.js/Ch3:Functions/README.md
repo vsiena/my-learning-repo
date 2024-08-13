@@ -98,3 +98,85 @@ console.log(roundTo(4.5, 2));
 ```
 
 ### Recursion
+
+A `function` that calls itself is called `recursive`. Recursion allows some functions to be written in a different *style*.
+
+Take, for example, this power function, which does the same as the `**`(exponentiation) operator:
+```javascript
+function power(base, exponent) {
+  if (exponent == 0) {
+    return 1;
+  } else {
+    return base * power(base, exponent - 1);
+  }
+}
+console.log(power(2, 3));
+// → 8
+```
+
+### Growing functions
+
+We want to write a program that prints two numbers: the numbers of cows and chickens on a farm, with the words Cows and Chickens after them and zeros padded before both numbers so that they are always three digits long:
+```
+007 Cows
+011 Chickens
+```
+```javascript
+function printFarmInventory(cows, chickens){
+  let cowString = String(cows);
+  while (cowString.length < 3){
+    cowString = "0" + cowString;
+  }
+  console.log(`{$cowString} Cows`);
+  let (checkenString.length < 3) {
+  }
+  console.log(`${checkenString} Chickens`);
+}
+printFarminventory(7, 11)
+```
+
+```
+add chickens to inventory
+```
+
+```javascript
+function zeroPad(number, width) {
+  let string = String(number);
+  while (string.length < width) {
+    string = "0" + string;
+  }
+  return string;
+}
+
+function printFarmInventory(cows, chickens, pigs) {
+  console.log(`${zeroPad(cows, 3)} Cows`);
+  console.log(`${zeroPad(chickens, 3)} Chickens`);
+  console.log(`${zeroPad(pigs, 3)} Pigs`);
+}
+
+printFarmInventory(7, 16, 3);
+```
+
+### Functions and side effects
+
+Functions can be roughly divided into those that are called for their `side effects` and those that are called for their `return value`.
+* The first helper function in the farm example, `printZeroPaddedWithLabel`, is called for its `side effect`: it prints a line.
+* The second version, `zeroPad`, is called for its `return value`.
+
+### Summary
+
+Ways to write a function:
+```javascript
+// Define f to hold a function value
+const f = function(a) {
+  console.log(a + 2);
+};
+
+// Declare g to be a function
+function g(a, b) {
+  return a * b * 3.5;
+}
+
+// A less verbose function value
+let h = a => a % 3;
+```
