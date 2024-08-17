@@ -297,3 +297,67 @@ There are also the functions `Math.ceil` (for “ceiling”, which `rounds up to
 
 ### Destructuring
 
+Let’s return to the phi function for a moment.
+
+```javascript
+function phi(table) {
+  return (table[3] * table[0] - table[2] * table[1]) /
+    Math.sqrt((table[2] + table[3]) *
+              (table[0] + table[1]) *
+              (table[1] + table[3]) *
+              (table[0] + table[2]));
+}
+```
+We’d much prefer to have bindings for the `elements` of the array—that is, let `n00 = table[0]` and so on. Fortunately, there is a succinct way to do this in JavaScript:
+
+```javascript
+function phi([n00, n01, n10, n11]) {
+  return (n11 * n00 - n10 * n01) /
+    Math.sqrt((n10 + n11) * (n00 + n01) *
+              (n01 + n11) * (n00 + n10));
+}
+```
+A similar trick works for `objects`, using `braces` instead of square brackets.
+
+```javascript
+let {name} = {name: "Faraji", age: 23};
+console.log(name);
+// → Faraji
+```
+
+### Optional property access
+
+When you aren’t sure whether a given `value` produces an `object`, but still want to read a property from it when it does, you can use a variant of the dot notation: `object?. ` property.
+
+```javascript
+function city(object) {
+  return object.address?.city;
+}
+console.log(city({address: {city: "Toronto"}}));
+// → Toronto
+console.log(city({name: "Vera"}));
+// → undefined
+```
+The expression `a?.b` means the same as `a.b` when `a` isn’t `null` or `undefined`. When it is, it evaluates to undefined. This can be convenient when, as in the example, you aren’t sure that a given property exists or when a variable might hold an undefined value.
+
+A similar notation can be used with `square bracket access`, and even with `function calls`, by putting `?.` in `front` of the parentheses or brackets:
+```javascript
+console.log("string".notAMethod?.());
+// → undefined
+console.log({}.arrayProp?.[0]);
+// → undefined
+```
+
+### JSON
+
+All property names have to be surrounded by double quotes, and only simple data expressions are allowed—no function calls, bindings, or anything that involves actual computation.
+
+JavaScript gives us the functions JSON.stringify and JSON.parse to convert data to and from this format. The first takes a JavaScript value and returns a JSON-encoded string. The second takes such a string and converts it to the value it encodes:
+
+```javascript
+let string = JSON.stringify({squirrel: false, events: ["weekend"]});
+console.log(string);
+// → {"squirrel":false,"events":["weekend"]}
+console.log(JSON.parse(string).events);
+// → ["weekend"]
+```
