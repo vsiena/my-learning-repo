@@ -14,6 +14,13 @@ which variant do you expect to be useful in more situations? Which one runs fast
 */
 
 // Your code here.
+function reverseArray(array){
+    let newArray = [];
+    for (let n of array) {
+        newArray.unshift(n);
+    } 
+    return newArray;
+}
 
 let myArray = ["A", "B", "C"];
 console.log(reverseArray(myArray));
