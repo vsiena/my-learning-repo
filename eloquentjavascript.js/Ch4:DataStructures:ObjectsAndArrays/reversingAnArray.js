@@ -22,6 +22,10 @@ function reverseArray(array){
     return newArray;
 }
 
+function reverseArrayInPlace(array){
+    
+}
+
 let myArray = ["A", "B", "C"];
 console.log(reverseArray(myArray));
 // → ["C", "B", "A"];
