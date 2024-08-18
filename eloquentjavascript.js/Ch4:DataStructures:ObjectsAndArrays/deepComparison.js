@@ -33,10 +33,59 @@ by immediately returning false when a mismatch is found and returning true at th
 let obj = {here: {is: "an"}, object: 2};
 
 // your code here
+console.log(typeof(obj))
+console.log(typeof(obj.here))
+console.log(typeof(obj.here.is))
+console.log(typeof(obj.object))
 
+function deepEqual(a, b) {
+    if (a === b) return true;
+    
+    if (a == null || typeof a != "object" ||
+        b == null || typeof b != "object") return false;
+  
+    let keysA = Object.keys(a), keysB = Object.keys(b);
+  
+    if (keysA.length != keysB.length) return false;
+  
+    for (let key of keysA) {
+      if (!keysB.includes(key) || !deepEqual(a[key], b[key])) return false;
+    }
+  
+    return true;
+  }
 console.log(deepEqual(obj, obj));
 // → true
 console.log(deepEqual(obj, {here: 1, object: 2}));
-// → false
+// // → false
 console.log(deepEqual(obj, {here: {is: "an"}, object: 2}));
-// → true
+// // → true
+
+/* 
+
+Breakdown
+
+Function Purpose: 
+This function checks if two values (a and b) are deeply equal. 
+Deep equality means that not only the values are equal, but if they are objects, 
+their properties must also be equal recursively.
+
+Checking Direct Equality: 
+if (a === b) return true; checks if a and b are strictly equal (e.g., same reference or value).
+
+Checking Non-Object Types: 
+The function then checks if either a or b is null or not of type "object". 
+If so, it returns false because they cannot be deeply equal if one or both are not objects.
+
+Comparing Object Keys: 
+It gets the keys of both objects with Object.keys() and 
+checks if they have the same length. If not, the objects are not equal.
+
+Recursively Checking Properties: 
+It loops through the keys of the first object (keysA) and checks 
+if each key exists in the second object (keysB). 
+It then recursively checks if the values of these keys are deeply equal by calling deepEqual(a[key], b[key]).
+
+Return True: 
+If all checks pass, the function returns true, indicating the objects are deeply equal.
+*/
