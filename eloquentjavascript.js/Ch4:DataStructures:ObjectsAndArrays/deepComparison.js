@@ -32,6 +32,8 @@ by immediately returning false when a mismatch is found and returning true at th
 
 let obj = {here: {is: "an"}, object: 2};
 
+// your code here
+
 console.log(deepEqual(obj, obj));
 // → true
 console.log(deepEqual(obj, {here: 1, object: 2}));
