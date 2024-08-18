@@ -123,3 +123,96 @@ console.log(SCRIPTS.filter(s => s.direction == "ttb"));
 
 ### Transforming with map
 
+The `map` method transforms an array by applying a function to all of its elements and building a `new` array from the returned values. The new array will `have the same length as the input array`, but its content will have been `mapped` to a new form by the function.
+
+```javascript 
+function map(array, transform) {
+  let mapped = [];
+  for (let element of array) {
+    mapped.push(transform(element));
+  }
+  return mapped;
+}
+
+let rtlScripts = SCRIPTS.filter(s => s.direction == "rtl");
+console.log(map(rtlScripts, s => s.name));
+// → ["Adlam", "Arabic", "Imperial Aramaic", …]
+```
+
+### Summarizing with reduce
+
+Another common thing to do with arrays is to compute a single value from them. The higher-order operation that represents this pattern is called `reduce` (sometimes also called fold).
+
+The parameters to `reduce` are, apart from the array, a combining function and a start value. This function is a little less straightforward than filter and map, so take a close look at it:
+
+```javascript
+function reduce(array, combine, start) {
+  let current = start;
+  for (let element of array) {
+    current = combine(current, element);
+  }
+  return current;
+}
+
+console.log(reduce([1, 2, 3, 4], (a, b) => a + b, 0));
+// → 10
+```
+If your array contains at least one element, you are allowed to leave off the start argument. The method will take the first element of the array as its start value and start reducing at the second element.
+
+```javascript
+console.log([1, 2, 3, 4].reduce((a, b) => a + b));
+// → 10
+```
+To use reduce (twice) to find the script with the most characters, we can write something like this:
+
+```javascript
+function characterCount(script) {
+  return script.ranges.reduce((count, [from, to]) => {
+    return count + (to - from);
+  }, 0);
+}
+
+console.log(SCRIPTS.reduce((a, b) => {
+  return characterCount(a) < characterCount(b) ? b : a;
+}));
+// → {name: "Han", …}
+```
+
+### Composability
+
+Let’s write code that finds the average year of origin for living and dead scripts in the dataset.
+
+```javascript
+function average(array) {
+  return array.reduce((a, b) => a + b) / array.length;
+}
+
+console.log(Math.round(average(
+  SCRIPTS.filter(s => s.living).map(s => s.year))));
+// → 1165
+console.log(Math.round(average(
+  SCRIPTS.filter(s => !s.living).map(s => s.year))));
+// → 204
+```
+
+### Strings and character codes
+
+One interesting use of this dataset would be figuring out what script a piece of text is using.
+
+Given a character code, we could use a function like this to find the corresponding script (if any):
+```javascript
+function characterScript(code) {
+  for (let script of SCRIPTS) {
+    if (script.ranges.some(([from, to]) => {
+      return code >= from && code < to;
+    })) {
+      return script;
+    }
+  }
+  return null;
+}
+
+console.log(characterScript(121));
+// → {name: "Latin", …}
+```
+The `some` method is another higher-order function. It takes a test function and tells you whether that function returns `true` for any of the elements in the array.
