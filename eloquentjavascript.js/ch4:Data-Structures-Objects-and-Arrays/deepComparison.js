@@ -37,6 +37,7 @@ console.log(typeof(obj))
 console.log(typeof(obj.here))
 console.log(typeof(obj.here.is))
 console.log(typeof(obj.object))
+console.log(Object.keys(obj));
 
 function deepEqual(a, b) {
     if (a === b) return true;
