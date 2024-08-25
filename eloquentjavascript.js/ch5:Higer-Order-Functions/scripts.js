@@ -1,6 +1,5 @@
 // Generated from the Unicode 10 database and https://en.wikipedia.org/wiki/Script_(Unicode)
 
-export {SCRIPTS};
 var SCRIPTS = [
   {
     name: "Adlam",
@@ -1122,3 +1121,7 @@ if (typeof module != "undefined" && module.exports && (typeof window == "undefin
   module.exports = SCRIPTS;
 if (typeof global != "undefined" && !global.SCRIPTS)
   global.SCRIPTS = SCRIPTS;
+
+module.exports = {
+  SCRIPTS
+};
