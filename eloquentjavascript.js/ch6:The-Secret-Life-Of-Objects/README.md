@@ -295,3 +295,146 @@ let myTrip = {
 console.log(myTrip[length], myTrip.length);
 // → 21500 2
 ```
+
+### The iterator interface
+
+The object given to a `for/of` loop is expected to be `iterable`. This means it has a method named with the `Symbol.iterator` symbol (a symbol value defined by the language, stored as a property of the `Symbol` function).
+
+When called, that method should return an object that provides a second interface, `iterator`. This is the actual thing that iterates. It has a `next` method that returns the next result. That result should be an object with a `value` property that provides the next value, if there is one, and a `done` property, which should be true when there are no more results and false otherwise.
+
+Note that the `next`, value, and `done` property names are plain strings, not symbols. Only `Symbol.iterator`, which is likely to be added to a lot of different objects, is an actual symbol.
+
+We can directly use this interface ourselves.
+
+```javascript
+let okIterator = "OK"[Symbol.iterator]();
+console.log(okIterator.next());
+// → {value: "O", done: false}
+console.log(okIterator.next());
+// → {value: "K", done: false}
+console.log(okIterator.next());
+// → {value: undefined, done: true}
+```
+
+Iterable data structure similar to the linked list from the exercise in Chapter 4.
+
+```javascript
+class List {
+  constructor(value, rest) {
+    this.value = value;
+    this.rest = rest;
+  }
+
+  get length() {
+    return 1 + (this.rest ? this.rest.length : 0);
+  }
+
+  static fromArray(array) {
+    let result = null;
+    for (let i = array.length - 1; i >= 0; i--) {
+      result = new this(array[i], result);
+    }
+    return result;
+  }
+}
+```
+
+Note that `this`, in a static method, points at the constructor of the class, not an instance—there is no instance around when a static method is called.
+
+Iterating over a list should return all the list’s elements from start to end. We’ll write a separate class for the iterator.
+
+```javascript
+class ListIterator {
+  constructor(list) {
+    this.list = list;
+  }
+
+  next() {
+    if (this.list == null) {
+      return {done: true};
+    }
+    let value = this.list.value;
+    this.list = this.list.rest;
+    return {value, done: false};
+  }
+}
+```
+
+The class tracks the progress of iterating through the list by updating its list property to move to the next list object whenever a value is returned and reports that it is done when that list is empty (null).
+
+Let’s set up the List class to be iterable. Throughout this book, I’ll occasionally use after-the-fact prototype manipulation to add methods to classes so that the individual pieces of code remain small and self contained. In a regular program, where there is no need to split the code into small pieces, you’d declare these methods directly in the class instead.
+
+```javascript
+List.prototype[Symbol.iterator] = function() {
+  return new ListIterator(this);
+};
+```
+
+We can now loop over a list with for/of.
+
+```javascript 
+let list = List.fromArray([1, 2, 3]);
+for (let element of list) {
+  console.log(element);
+}
+// → 1
+// → 2
+// → 3
+```
+
+The ... syntax in array notation and function calls similarly works with any iterable object. For example, you can use `[...value]` to create an array containing the elements in an arbitrary iterable object.
+
+```javascript
+console.log([..."PCI"]);
+// → ["P", "C", "I"]
+```
+
+### Inheritance
+
+In object-oriented programming terms, this is called `inheritance`. The new class inherits properties and behavior from the old class.
+
+```javascript 
+class LengthList extends List {
+  #length;
+
+  constructor(value, rest) {
+    super(value, rest);
+    this.#length = super.length;
+  }
+
+  get length() {
+    return this.#length;
+  }
+}
+
+console.log(LengthList.fromArray([1, 2, 3]).length);
+// → 3
+```
+
+The use of the word `extends` indicates that this class shouldn’t be directly based on the default `Object` prototype but on some other class. This is called the superclass. The derived class is the subclass.
+
+To initialize a `LengthList` instance, the constructor calls the constructor of its superclass through the super keyword. This is necessary because if this new object is to behave (roughly) like a `List`, it is going to need the instance properties that lists have.
+
+he constructor then stores the list’s length in a private property. If we had written this.length there, the class’s own getter would have been called, which doesn’t work yet since #length hasn’t been filled in yet. We can use super.something to call methods and getters on the superclass’s prototype, which is often useful.
+
+Inheritance allows us to build slightly different data types from existing data types with relatively little work. It is a fundamental part of the object-oriented tradition, alongside encapsulation and polymorphism. But while the latter two are now generally regarded as wonderful ideas, inheritance is more controversial.
+
+Whereas encapsulation and polymorphism can be used to separate pieces of code from one another, reducing the tangledness of the overall program, inheritance fundamentally ties classes together, creating more tangle. When inheriting from a class, you usually have to know more about how it works than when simply using it. Inheritance can be a useful tool to make some types of programs more succinct, but it shouldn’t be the first tool you reach for, and you probably shouldn’t actively go looking for opportunities to construct class hierarchies (family trees of classes).
+
+### The instanceof operator
+
+It is occasionally useful to know whether an object was derived from a specific class. For this, JavaScript provides a binary operator called `instanceof`.
+
+```javascript
+console.log(
+  new LengthList(1, null) instanceof LengthList);
+// → true
+console.log(new LengthList(2, null) instanceof List);
+// → true
+console.log(new List(3, null) instanceof LengthList);
+// → false
+console.log([1] instanceof Array);
+// → true
+```
+
+The operator will see through inherited types, so a `LengthList` is an instance of `List`. The operator can also be applied to standard constructors like Array. Almost every object is an instance of `Object`.
