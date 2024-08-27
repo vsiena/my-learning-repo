@@ -213,7 +213,7 @@ console.log(Object.hasOwn({x: 1}, "toString"));
 
 ### Getters, setters, and statics
 
-Interfaces often contain plain properties, not just methods. For example, Map objects have a size property that tells you how many keys are stored in them.
+Interfaces often contain plain properties, not just methods. For example, `Map` objects have a `size` property that tells you how many keys are stored in them.
 
 It is not necessary for such an object to compute and store such a property directly in the instance. Even properties that are accessed directly may hide a method call. Such methods are called getters and are defined by writing get in front of the method name in an object expression or class declaration.
 
@@ -255,4 +255,43 @@ console.log(temp.fahrenheit);
 temp.fahrenheit = 86;
 console.log(temp.celsius);
 // → 30
+```
+
+### Symbols
+
+Most properties, including all those we have seen so far, are named with strings. But it is also possible to use symbols as property names. Symbols are values created with the Symbol function. Unlike strings, newly created symbols are unique—you cannot create the same symbol twice.
+
+```javascript
+let sym = Symbol("name");
+console.log(sym == Symbol("name"));
+// → false
+Rabbit.prototype[sym] = 55;
+console.log(killerRabbit[sym]);
+// → 55
+```
+
+The string you pass to Symbol is included when you convert it to a string and can make it easier to recognize a symbol when, for example, showing it in the console. But it has no `meaning` beyond that—multiple symbols may have the same name.
+
+Being both unique and usable as property names makes symbols suitable for defining interfaces that can peacefully live alongside other properties, no matter what their names are.
+
+```javascript
+const length = Symbol("length");
+Array.prototype[length] = 0;
+
+console.log([1, 2].length);
+// → 2
+console.log([1, 2][length]);
+// → 0
+```
+It is possible to include symbol properties in object expressions and classes by using square brackets around the property name. That causes the expression between the brackets to be evaluated to produce the property name, analogous to the square bracket property access notation.
+
+```javascript
+let myTrip = {
+  length: 2,
+  0: "Lankwitz",
+  1: "Babelsberg",
+  [length]: 21500
+};
+console.log(myTrip[length], myTrip.length);
+// → 21500 2
 ```
