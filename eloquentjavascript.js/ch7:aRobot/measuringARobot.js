@@ -31,6 +31,9 @@ which is the total number of steps taken divided by the
 number of measurements.
 */
 
+const { goalOrientedRobot } = require('./aRobot.js')
+const { routeRobot } = require('./aRobot.js')
+const { VillageState } = require('./aRobot.js')
 
 function countSteps(state, robot, memory) {
     for (let steps = 0; ; steps++) {

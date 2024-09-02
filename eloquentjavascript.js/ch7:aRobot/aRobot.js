@@ -104,7 +104,7 @@ runRobot(VillageState.random(), randomRobot);
 // → …
 // → Done in 63 turns
 
-runRobotAnimation(VillageState.random(), randomRobot);
+// runRobotAnimation(VillageState.random(), randomRobot);
 
 const mailRoute = [
   "Alice's House", "Cabin", "Alice's House", "Bob's House",
@@ -120,7 +120,7 @@ function routeRobot(state, memory) {
   return {direction: memory[0], memory: memory.slice(1)};
 }
 
-runRobotAnimation(VillageState.random(), routeRobot, []);
+// runRobotAnimation(VillageState.random(), routeRobot, []);
 
 function findRoute(graph, from, to) {
   let work = [{at: from, route: []}];
@@ -148,4 +148,11 @@ function goalOrientedRobot({place, parcels}, route) {
 }
 
 
-runRobotAnimation(VillageState.random(), goalOrientedRobot, []);
+// runRobotAnimation(VillageState.random(), goalOrientedRobot, []);
+
+
+module.exports = {
+  goalOrientedRobot,
+  routeRobot,
+  VillageState
+};
