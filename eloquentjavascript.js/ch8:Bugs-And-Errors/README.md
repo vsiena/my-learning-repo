@@ -125,4 +125,143 @@ function promptNumber(question) {
 console.log(promptNumber("How many trees do you see?"));
 ```
 
+### Exceptions
+
+When a function cannot proceed normally, what we would often `like` to do is just stop what we are doing and immediately jump to a place that knows how to handle the problem. This is what `exception handling` does.
+
+Here’s an example:
+
+```javascript
+function promptDirection(question) {
+  let result = prompt(question);
+  if (result.toLowerCase() == "left") return "L";
+  if (result.toLowerCase() == "right") return "R";
+  throw new Error("Invalid direction: " + result);
+}
+
+function look() {
+  if (promptDirection("Which way?") == "L") {
+    return "a house";
+  } else {
+    return "two angry bears";
+  }
+}
+
+try {
+  console.log("You see", look());
+} catch (error) {
+  console.log("Something went wrong: " + error);
+}
+```
+
+The throw keyword is used to raise an exception. Catching one is done by wrapping a piece of code in a try block, followed by the keyword catch. When the code in the try block causes an exception to be raised, the catch block is evaluated, with the name in parentheses bound to the exception value. After the catch block finishes—or if the try block finishes without problems—the program proceeds beneath the entire try/catch statement.
+
+In this case, we used the Error constructor to create our exception value. This is a standard JavaScript constructor that creates an object with a message property. Instances of Error also gather information about the call stack that existed when the exception was created, a so-called stack trace. This information is stored in the stack property and can be helpful when trying to debug a problem: it tells us the function where the problem occurred and which functions made the failing call.
+
+Note that the look function completely ignores the possibility that promptDirection might go wrong. This is the big advantage of exceptions: error-handling code is necessary only at the point where the error occurs and at the point where it is handled. The functions in between can forget all about it.
+
+Well, almost...
+
+### Cleaning up after exceptions
+
+Here is some really bad banking code:
+
+```javascript
+const accounts = {
+  a: 100,
+  b: 0,
+  c: 20
+};
+
+function getAccount() {
+  let accountName = prompt("Enter an account name");
+  if (!Object.hasOwn(accounts, accountName)) {
+    throw new Error(`No such account: ${accountName}`);
+  }
+  return accountName;
+}
+
+function transfer(from, amount) {
+  if (accounts[from] < amount) return;
+  accounts[from] -= amount;
+  accounts[getAccount()] += amount;
+}
+```
+
+The `transfer` function transfers a sum of money from a given account to another, asking for the name of the other account in the process. If given an invalid account name, getAccount throws an exception.
+
+But `transfer` first removes the money from the account and then calls getAccount before it adds it to another account. If it is broken off by an exception at that point, it’ll just make the money disappear.
+
+Since that isn’t always practical, try statements have another feature: they may be followed by a finally block either instead of or in addition to a catch block. A finally block says “no matter what happens, run this code after trying to run the code in the try block.”
+
+```javascript
+function transfer(from, amount) {
+  if (accounts[from] < amount) return;
+  let progress = 0;
+  try {
+    accounts[from] -= amount;
+    progress = 1;
+    accounts[getAccount()] += amount;
+    progress = 2;
+  } finally {
+    if (progress == 1) {
+      accounts[from] += amount;
+    }
+  }
+}
+```
+This version of the function tracks its progress, and if, when leaving, it notices that it was aborted at a point where it had created an inconsistent program state, it repairs the damage it did.
+
+Note that even though the finally code is run when an exception is thrown in the try block, it does not interfere with the exception. After the finally block runs, the stack continues unwinding.
+
+### Selective catching
+
+Rather, let’s define a new type of error and use instanceof to identify it.
+
+```javascript
+class InputError extends Error {}
+
+function promptDirection(question) {
+  let result = prompt(question);
+  if (result.toLowerCase() == "left") return "L";
+  if (result.toLowerCase() == "right") return "R";
+  throw new InputError("Invalid direction: " + result);
+}
+```
+The new error class extends Error. It doesn’t define its own constructor, which means that it inherits the Error constructor, which expects a string message as argument. In fact, it doesn’t define anything at all—the class is empty. InputError objects behave like Error objects, except that they have a different class by which we can recognize them.
+
+Now the loop can catch these more carefully.
+
+```javascript
+for (;;) {
+  try {
+    let dir = promptDirection("Where?");
+    console.log("You chose ", dir);
+    break;
+  } catch (e) {
+    if (e instanceof InputError) {
+      console.log("Not a valid direction. Try again.");
+    } else {
+      throw e;
+    }
+  }
+}
+```
+This will catch only instances of InputError and let unrelated exceptions through. If you reintroduce the typo, the undefined binding error will be properly reported.
+
+### Assertions
+
+`Assertions` are checks inside a program that verify that something is the way it is supposed to be. They are used not to handle situations that can come up in normal operation but to find programmer mistakes.
+
+If, for example, `firstElement` is described as a function that should never be called on empty arrays, we might write it like this:
+
+```javacript
+function firstElement(array) {
+  if (array.length == 0) {
+    throw new Error("firstElement called with []");
+  }
+  return array[0];
+}
+```
+Now, instead of silently returning undefined (which you get when reading an array property that does not exist), this will loudly blow up your program as soon as you misuse it. This makes it less likely for such mistakes to go unnoticed and easier to find their cause when they occur.
 
