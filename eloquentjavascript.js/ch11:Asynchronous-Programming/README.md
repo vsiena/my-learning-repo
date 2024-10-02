@@ -199,3 +199,149 @@ Inside an async function, the word await can be put in front of an expression to
 uch a function no longer runs from start to completion in one go like a regular JavaScript function. Instead, it can be frozen at any point that has an await and can be resumed at a later time.
 
 For most asynchronous code, this notation is more convenient than directly using promises. You do still need an understanding of promises, since in many cases you’ll still interact with them directly. But when wiring them together, async functions are generally more pleasant to write than chains of then calls.
+
+### Generators
+
+This ability of functions to be paused and then resumed again is not exclusive to async functions. JavaScript also has a feature called `generator functions`. These are similar, but without the promises.
+
+When you define a function with `function*` (placing an asterisk after the word function), it becomes a generator. When you call a generator, it returns an iterator, which we already saw in Chapter 6.
+
+```javascript
+function* powers(n) {
+  for (let current = n;; current *= n) {
+    yield current;
+  }
+}
+
+for (let power of powers(3)) {
+  if (power > 50) break;
+  console.log(power);
+}
+// → 3
+// → 9
+// → 27
+```
+
+Initially, when you call `powers`, the function is frozen at its start. Every time you call `next` on the iterator, the function runs until it hits a `yield` expression, which pauses it and causes the yielded value to become the next value produced by the iterator. When the function returns (the one in the example never does), the iterator is done.
+
+Writing iterators is often much easier when you use generator functions. The iterator for the Group class (from the exercise in Chapter 6) can be written with this generator:
+```javascript
+Group.prototype[Symbol.iterator] = function*() {
+  for (let i = 0; i < this.members.length; i++) {
+    yield this.members[i];
+  }
+};
+```
+
+There’s no longer a need to create an object to hold the iteration state—generators automatically save their local state every time they yield.
+
+Such `yield` expressions may occur only directly in the generator function itself and not in an inner function you define inside of it. The state a generator saves, when yielding, is only its `local` environment and the position where it yielded.
+
+An `async` function is a special type of generator. It produces a promise when called, which is resolved when it returns (finishes) and rejected when it throws an exception. Whenever it yields (awaits) a promise, the result of that promise (value or thrown exception) is the result of the `await` expression.
+
+### A Corvid Art Project
+
+One morning, Carla wakes up to unfamiliar noise from the tarmac outside of her hangar. Hopping onto the edge of the roof, she sees the humans are setting up for something. There’s a lot of electric cabling, a stage, and some kind of big black wall being built up.
+
+Being a curious crow, Carla takes a closer look at the wall. It appears to consist of a number of large glass-fronted devices wired up to cables. On the back, the devices say “LedTec SIG-5030”.
+
+A quick internet search turns up a user manual for these devices. They appear to be traffic signs, with a programmable matrix of amber LED lights. The intent of the humans is probably to display some kind of information on them during their event. Interestingly, the screens can be programmed over a wireless network. Could it be they are connected to the building’s local network?
+
+Each device on a network gets an IP address, which other devices can use to send it messages. We talk more about that in Chapter 13. Carla notices that her own phones all get addresses like 10.0.0.20 or 10.0.0.33. It might be worth trying to send messages to all such addresses and see if any one of them responds to the interface described in the manual for the signs.
+
+Chapter 18 shows how to make real requests on real networks. In this chapter, we’ll use a simplified dummy function called request for network communication. This function takes two arguments—a network address and a message, which may be anything that can be sent as JSON—and returns a promise that either resolves to a response from the machine at the given address, or rejects if there was a problem.
+
+According to the manual, you can change what is displayed on a SIG-5030 sign by sending it a message with content like {"command": "display", "data": [0, 0, 3, …]}, where data holds one number per LED dot, providing its brightness—0 means off, 3 means maximum brightness. Each sign is 50 lights wide and 30 lights high, so an update command should send 1,500 numbers.
+
+This code sends a display update message to all addresses on the local network, to see what sticks. Each of the numbers in an IP address can go from 0 to 255. In the data it sends, it activates a number of lights corresponding to the network address’s last number.
+
+```javascript
+for (let addr = 1; addr < 256; addr++) {
+  let data = [];
+  for (let n = 0; n < 1500; n++) {
+    data.push(n < addr ? 3 : 0);
+  }
+  let ip = `10.0.0.${addr}`;
+  request(ip, {command: "display", data})
+    .then(() => console.log(`Request to ${ip} accepted`))
+    .catch(() => {});
+}
+```
+Since most of these addresses won’t exist or will not accept such messages, the catch call makes sure network errors don’t crash the program. The requests are all sent out immediately, without waiting for other requests to finish, in order to not waste time when some of the machines don’t answer.
+
+Having fired off her network scan, Carla heads back outside to see the result. To her delight, all of the screens are now showing a stripe of light in their upper-left corners. They are on the local network, and they do accept commands. She quickly notes the numbers shown on each screen. There are nine screens, arranged three high and three wide. They have the following network addresses:
+
+```javascript
+const screenAddresses = [
+  "10.0.0.44", "10.0.0.45", "10.0.0.41",
+  "10.0.0.31", "10.0.0.40", "10.0.0.42",
+  "10.0.0.48", "10.0.0.47", "10.0.0.46"
+];
+```
+
+Now this opens up possibilities for all kinds of shenanigans. She could show “crows rule, humans drool” on the wall in giant letters. But that feels a bit crude. Instead, she plans to show a video of a flying crow covering all of the screens at night.
+
+Carla finds a fitting video clip, in which a second and a half of footage can be repeated to create a looping video showing a crow’s wingbeat. To fit the nine screens (each of which can show 50×30 pixels), Carla cuts and resizes the videos to get a series of 150×90 images, 10 per second. Those are then each cut into nine rectangles, and processed so that the dark spots on the video (where the crow is) show a bright light, and the light spots (no crow) are left dark, which should create the effect of an amber crow flying against a black background.
+
+She has set up the clipImages variable to hold an array of frames, where each frame is represented with an array of nine sets of pixels—one for each screen—in the format that the signs expect.
+
+To display a single frame of the video, Carla needs to send a request to all the screens at once. But she also needs to wait for the result of these requests, both in order to not start sending the next frame before the current one has been properly sent and in order to notice when requests are failing.
+
+Promise has a static method all that can be used to convert an array of promises into a single promise that resolves to an array of results. This provides a convenient way to have some asynchronous actions happen alongside each other, wait for them all to finish, and then do something with their results (or at least wait for them to make sure they don’t fail).
+
+```javascript
+function displayFrame(frame) {
+  return Promise.all(frame.map((data, i) => {
+    return request(screenAddresses[i], {
+      command: "display",
+      data
+    });
+  }));
+}
+```
+
+This maps over the images in frame (which is an array of display data arrays) to create an array of request promises. It then returns a promise that combines all of those.
+
+In order to be able to stop a playing video, the process is wrapped in a class. This class has an asynchronous play method that returns a promise that resolves only when the playback is stopped again via the stop method.
+
+```javascript
+function wait(time) {
+  return new Promise(accept => setTimeout(accept, time));
+}
+
+class VideoPlayer {
+  constructor(frames, frameTime) {
+    this.frames = frames;
+    this.frameTime = frameTime;
+    this.stopped = true;
+  }
+
+  async play() {
+    this.stopped = false;
+    for (let i = 0; !this.stopped; i++) {
+      let nextFrame = wait(this.frameTime);
+      await displayFrame(this.frames[i % this.frames.length]);
+      await nextFrame;
+    }
+  }
+
+  stop() {
+    this.stopped = true;
+  }
+}
+```
+
+The wait function wraps setTimeout in a promise that resolves after the given number of milliseconds. This is useful for controlling the speed of the playback.
+
+```javascript
+let video = new VideoPlayer(clipImages, 100);
+video.play().catch(e => {
+  console.log("Playback failed: " + e);
+});
+setTimeout(() => video.stop(), 15000);
+```
+
+For the entire week that the screen wall stands, every evening, when it is dark, a huge glowing orange bird mysteriously appears on it.
+
+### The event loop
+
