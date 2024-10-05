@@ -7,9 +7,10 @@ Hint: divide by 5 - If decimal rount up.
 
 
 
-function zeros (n) {
-    if (n % 5 == 0) return n / 5;
-    else return Math.round(n / 5)
+function zeros(n) {
+    var result = 0;
+    while (n = Math.floor(n / 5)) result += n;
+    return result;
 }
 
-console.log(zeros(12));
+console.log(zeros(30));
