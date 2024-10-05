@@ -345,3 +345,91 @@ For the entire week that the screen wall stands, every evening, when it is dark,
 
 ### The event loop
 
+An asynchronous program starts by running its main script, which will often set up callbacks to be called later. That main script, as well as the callbacks, run to completion in one piece, uninterrupted. But between them, the program may sit idle, waiting for something to happen.
+
+So callbacks are not directly called by the code that scheduled them. If I call setTimeout from within a function, that function will have returned by the time the callback function is called. And when the callback returns, control does not go back to the function that scheduled it.
+
+Asynchronous behavior happens on its own empty function call stack. This is one of the reasons that, without promises, managing exceptions across asynchronous code is so hard. Since each callback starts with a mostly empty stack, your catch handlers won’t be on the stack when they throw an exception.
+
+```javascript
+try {
+  setTimeout(() => {
+    throw new Error("Woosh");
+  }, 20);
+} catch (e) {
+  // This will not run
+  console.log("Caught", e);
+}
+```
+
+No matter how closely together events—such as timeouts or incoming requests—happen, a JavaScript environment will run only one program at a time. You can think of this as it running a big loop around your program, called the `event loop`. When there’s nothing to be done, that loop is paused. But as events come in, they are added to a queue, and their code is executed one after the other. Because no two things run at the same time, slow-running code can delay the handling of other events.
+
+This example sets a timeout but then dallies until after the timeout’s intended point of time, causing the timeout to be late.
+
+```javascript
+let start = Date.now();
+setTimeout(() => {
+  console.log("Timeout ran at", Date.now() - start);
+}, 20);
+while (Date.now() < start + 50) {}
+console.log("Wasted time until", Date.now() - start);
+// → Wasted time until 50
+// → Timeout ran at 55
+```
+
+Promises always resolve or reject as a new event. Even if a promise is already resolved, waiting for it will cause your callback to run after the current script finishes, rather than right away.
+
+```javascript
+Promise.resolve("Done").then(console.log);
+console.log("Me first!");
+// → Me first!
+// → Done
+```
+
+In later chapters we’ll see various other types of events that run on the event loop.
+
+### Asynchronous bugs
+
+When your program runs synchronously, in a single go, there are no state changes happening except those that the prgram itself makes. For asynchrounous prgrams this is different - they may have `gaps` in their xecution during which other code an run.
+
+Let's look at an example. This is a function that tries to report the size of each file in an array of ifles, making sure to read them all at the same time rather than in sequence. 
+
+```javascript
+async function fileSizes(files){
+  let list = "";
+  await Promise.all(files.map(async fileName => {
+    list += fileName + ": " + 
+    (await textFile(fileName)).length + "\n";
+  }));
+  return list;
+}
+```
+
+The `async fileName =>` part shows how arrow functionscan also be made `async` by putting the word `async` in front of them.
+
+The code doesn’t immediately look suspicious... it maps the async arrow function over the array of names, creating an array of promises, and then uses Promise.all to wait for all of these before returning the list they build up.
+
+But this program is entirely broken. It’ll always return only a single line of output, listing the file that took the longest to read.
+
+```javascript
+fileSizes(["plans.txt", "shopping_list.txt"])
+  .then(console.log);
+  ```
+Can you work out why?
+
+The problem lies in the `+=` operator, which takes the current value of `list` at the time the statement starts executing and then, when the await finishes, sets the `list` binding to be that value plus the added string.
+
+But between the time the statement starts executing and the time it finishes, there’s an asynchronous gap. The map expression runs before anything has been added to the list, so each of the `+=` operators starts from an empty string and ends up, when its storage retrieval finishes, setting `list` to the result of adding its line to the empty string.
+
+This could have easily been avoided by returning the lines from the mapped promises and calling `join` on the result of `Promise.all`, instead of building up the list by changing a binding. As usual, computing new values is less error prone than changing existing values.
+
+```javascript
+async function fileSizes(files) {
+  let lines = files.map(async fileName => {
+    return fileName + ": " +
+      (await textFile(fileName)).length;
+  });
+  return (await Promise.all(lines)).join("\n");
+}
+```
+Mistakes like this are easy to make, especially when using await, and you should be aware of where the gaps in your code occur. An advantage of JavaScript’s explicit asynchronicity (whether through callbacks, promises, or await) is that spotting these gaps is relatively easy.
