@@ -52,8 +52,6 @@ function plus(rightHandOperand) {
     return function(leftHandOperand){
         return leftHandOperand + rightHandOperand;
     }
-
-
 }
 function minus(rightHandOperand) {
     return function(leftHandOperand){
