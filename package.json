@@ -1,0 +1,14 @@
+{
+  "name": "my-learning-repo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/vsiena/my-learning-repo.git",
+  "author": "vsiena <vincent.siena@feather-insurance.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
